@@ -25,7 +25,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
         {isOpen && (
           <div className="font-bold text-xl text-pharma flex items-center">
             <Pill className="mr-2 h-6 w-6" />
-            <span>Pill Panda</span>
+            <span>Sanime</span>
           </div>
         )}
         {!isOpen && (

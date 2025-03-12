@@ -17,8 +17,8 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ toggleSidebar }) => {
           <Menu className="h-5 w-5" />
         </Button>
         <div className="font-semibold text-lg text-pharma-dark flex items-center gap-2">
-          <span className="hidden md:inline">Pill Panda</span>
-          <span className="inline md:hidden">PP</span>
+          <span className="hidden md:inline">Sanime</span>
+          <span className="inline md:hidden">S</span>
         </div>
       </div>
       
