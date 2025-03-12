@@ -8,7 +8,7 @@ import {
   Phone, 
   Mail, 
   MapPin, 
-  User,
+  User as UserIcon,
   Pill,
   FileText,
   Send,
@@ -446,7 +446,7 @@ const BookingDetails = () => {
             </CardContent>
             <CardFooter>
               <Button variant="outline" className="w-full">
-                <User className="mr-2 h-4 w-4" /> Visualizza profilo completo
+                <UserIcon className="mr-2 h-4 w-4" /> Visualizza profilo completo
               </Button>
             </CardFooter>
           </Card>
