@@ -2,14 +2,10 @@
 import React from 'react';
 import { 
   Home, 
-  ShoppingBag, 
-  Users, 
-  MessageSquare, 
-  BarChart2, 
+  ShoppingBag,  
   Settings,
   LogOut,
   Pill,
-  Workflow
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -42,12 +38,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
       <nav className="flex-1 overflow-y-auto p-2">
         <ul className="space-y-1">
           <NavItem icon={<Home />} label="Dashboard" isOpen={isOpen} isActive={true} />
-          <NavItem icon={<ShoppingBag />} label="Prenotazioni" isOpen={isOpen} />
-          <NavItem icon={<Users />} label="Clienti" isOpen={isOpen} />
-          <NavItem icon={<MessageSquare />} label="Messaggi" isOpen={isOpen} />
-          <NavItem icon={<Pill />} label="Farmaci" isOpen={isOpen} />
-          <NavItem icon={<Workflow />} label="Workflow n8n" isOpen={isOpen} />
-          <NavItem icon={<BarChart2 />} label="Report" isOpen={isOpen} />
+          <NavItem icon={<ShoppingBag />} label="Ordini" isOpen={isOpen} />
         </ul>
       </nav>
       
