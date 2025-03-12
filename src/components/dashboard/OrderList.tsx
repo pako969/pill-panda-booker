@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { 
   Card, 
   CardContent, 
@@ -7,16 +8,20 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Booking, User, mockBookings, mockUsers, mockMedications } from '@/types/database';
-import { format } from 'date-fns';
-import { Eye, ExternalLink, MessageCircle } from 'lucide-react';
+import { Eye, ExternalLink, MessageCircle, Check, X, Pencil, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 
 const OrderList: React.FC = () => {
-  // In a real app, this would fetch data from an API
-  const orders = [...mockBookings].sort((a, b) => 
+  const [orders, setOrders] = useState([...mockBookings].sort((a, b) => 
     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
+  ));
+  
+  const [editingOrder, setEditingOrder] = useState<string | null>(null);
+  const [editingField, setEditingField] = useState<'status' | 'product' | null>(null);
+  const [editValue, setEditValue] = useState('');
 
   const getUserById = (userId: string): User | undefined => {
     return mockUsers.find(user => user.id === userId);
@@ -37,6 +42,50 @@ const OrderList: React.FC = () => {
       default:
         return <Badge variant="outline">Sconosciuto</Badge>;
     }
+  };
+
+  const startEditing = (orderId: string, field: 'status' | 'product', currentValue: string) => {
+    setEditingOrder(orderId);
+    setEditingField(field);
+    setEditValue(currentValue);
+  };
+
+  const cancelEditing = () => {
+    setEditingOrder(null);
+    setEditingField(null);
+    setEditValue('');
+  };
+
+  const saveEditing = (orderId: string) => {
+    if (!editingField) return;
+
+    setOrders(prevOrders => 
+      prevOrders.map(order => {
+        if (order.id === orderId) {
+          if (editingField === 'status') {
+            const validStatus: Booking['status'][] = ['pending', 'confirmed', 'ready', 'delivered', 'cancelled'];
+            // Check if the entered status is valid
+            const status = validStatus.includes(editValue as Booking['status']) 
+              ? editValue as Booking['status'] 
+              : order.status;
+            
+            toast.success(`Stato dell'ordine #${orderId} aggiornato a ${status}`);
+            return { ...order, status };
+          } else if (editingField === 'product') {
+            // For demo purposes, we'll update the first medication's name
+            const firstMedId = order.medications[0]?.medicationId;
+            if (firstMedId) {
+              toast.success(`Prodotto dell'ordine #${orderId} aggiornato a ${editValue}`);
+              // In a real app, this would update the medication in the database
+              return order;
+            }
+          }
+        }
+        return order;
+      })
+    );
+
+    cancelEditing();
   };
 
   return (
@@ -68,6 +117,7 @@ const OrderList: React.FC = () => {
               ) : (
                 orders.map(order => {
                   const user = getUserById(order.userId);
+                  
                   // Get first medication as the "requested product" for display
                   const requestedProduct = order.medications[0] ? 
                     mockMedications.find(med => med.id === order.medications[0].medicationId)?.name || 'Prodotto sconosciuto' : 
@@ -88,7 +138,37 @@ const OrderList: React.FC = () => {
                         {user?.phoneNumber || 'N/A'}
                       </td>
                       <td className="px-4 py-3">
-                        {!hasImageRequest ? requestedProduct : ''}
+                        {!hasImageRequest ? (
+                          editingOrder === order.id && editingField === 'product' ? (
+                            <div className="flex items-center gap-1">
+                              <Input 
+                                value={editValue} 
+                                onChange={(e) => setEditValue(e.target.value)}
+                                className="h-8 py-1 w-40" 
+                                autoFocus
+                              />
+                              <Button variant="ghost" size="icon" onClick={() => saveEditing(order.id)} title="Salva">
+                                <Save className="h-4 w-4 text-green-600" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={cancelEditing} title="Annulla">
+                                <X className="h-4 w-4 text-red-600" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1">
+                              <span>{requestedProduct}</span>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                onClick={() => startEditing(order.id, 'product', requestedProduct)}
+                                title="Modifica prodotto"
+                                className="h-6 w-6 ml-1"
+                              >
+                                <Pencil className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )
+                        ) : ''}
                       </td>
                       <td className="px-4 py-3">
                         {hasImageRequest ? (
@@ -99,7 +179,36 @@ const OrderList: React.FC = () => {
                         ) : ''}
                       </td>
                       <td className="px-4 py-3">
-                        {getStatusBadge(order.status)}
+                        {editingOrder === order.id && editingField === 'status' ? (
+                          <div className="flex items-center gap-1">
+                            <Input 
+                              value={editValue} 
+                              onChange={(e) => setEditValue(e.target.value)}
+                              className="h-8 py-1 w-40" 
+                              placeholder="pending, confirmed, ready, delivered, cancelled"
+                              autoFocus
+                            />
+                            <Button variant="ghost" size="icon" onClick={() => saveEditing(order.id)} title="Salva">
+                              <Save className="h-4 w-4 text-green-600" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={cancelEditing} title="Annulla">
+                              <X className="h-4 w-4 text-red-600" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1">
+                            {getStatusBadge(order.status)}
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={() => startEditing(order.id, 'status', order.status)}
+                              title="Modifica stato"
+                              className="h-6 w-6 ml-1"
+                            >
+                              <Pencil className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-1">

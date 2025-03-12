@@ -6,9 +6,12 @@ import {
   Settings,
   LogOut,
   Pill,
+  Shield,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -16,6 +19,18 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+  
+  const handleNavigation = (path: string) => {
+    navigate(path);
+  };
+  
   return (
     <aside className={cn(
       "fixed inset-y-0 left-0 z-20 flex flex-col bg-white border-r border-gray-200 transition-all duration-300 ease-in-out", 
@@ -37,15 +52,44 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
       
       <nav className="flex-1 overflow-y-auto p-2">
         <ul className="space-y-1">
-          <NavItem icon={<Home />} label="Dashboard" isOpen={isOpen} isActive={true} />
-          <NavItem icon={<ShoppingBag />} label="Ordini" isOpen={isOpen} />
+          <NavItem 
+            icon={<Home />} 
+            label="Dashboard" 
+            isOpen={isOpen} 
+            isActive={true} 
+            onClick={() => handleNavigation('/')}
+          />
+          <NavItem 
+            icon={<ShoppingBag />} 
+            label="Ordini" 
+            isOpen={isOpen}
+            onClick={() => handleNavigation('/')}
+          />
+          
+          {user?.role === 'super_admin' && (
+            <NavItem 
+              icon={<Shield />} 
+              label="Super Admin" 
+              isOpen={isOpen}
+              onClick={() => handleNavigation('/admin')}
+            />
+          )}
         </ul>
       </nav>
       
       <div className="p-2 border-t border-gray-200">
         <ul className="space-y-1">
-          <NavItem icon={<Settings />} label="Impostazioni" isOpen={isOpen} />
-          <NavItem icon={<LogOut />} label="Esci" isOpen={isOpen} />
+          <NavItem 
+            icon={<Settings />} 
+            label="Impostazioni" 
+            isOpen={isOpen}
+          />
+          <NavItem 
+            icon={<LogOut />} 
+            label="Esci" 
+            isOpen={isOpen}
+            onClick={handleLogout}
+          />
         </ul>
       </div>
     </aside>
@@ -57,9 +101,10 @@ interface NavItemProps {
   label: string;
   isOpen: boolean;
   isActive?: boolean;
+  onClick?: () => void;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ icon, label, isOpen, isActive = false }) => {
+const NavItem: React.FC<NavItemProps> = ({ icon, label, isOpen, isActive = false, onClick }) => {
   return (
     <li>
       <Button
@@ -69,6 +114,7 @@ const NavItem: React.FC<NavItemProps> = ({ icon, label, isOpen, isActive = false
           isActive && "bg-pharma-light/20 text-pharma-dark",
           isActive && !isOpen && "bg-pharma-light/20"
         )}
+        onClick={onClick}
       >
         <span className={cn("mr-2", !isOpen && "mr-0")}>{icon}</span>
         {isOpen && <span>{label}</span>}
